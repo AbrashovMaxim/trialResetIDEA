@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -65,26 +66,28 @@ func deleteKey(key registry.Key, path string) error {
 }
 
 func main() {
-	names := map[string]string{"1": "WebStorm", "2": "IntelliJ", "3": "GoLand", "4": "PyCharm", "5": "PhpStorm", "6": "CLion", "7": "Rider", "8": "RustRover", "9": "DataGrip", "10": "RubyMine"}
-	keyNames := map[string]string{"1": "webstorm", "2": "idea", "3": "goland", "4": "pycharm", "5": "phpstorm", "6": "clion", "7": "rider", "8": "rustrover", "9": "datagrip", "10": "rubymine"}
+	names := map[int]string{1: "WebStorm", 2: "IntelliJ", 3: "GoLand", 4: "PyCharm", 5: "PhpStorm", 6: "CLion", 7: "Rider", 8: "RustRover", 9: "DataGrip", 10: "RubyMine"}
+	keyNames := map[int]string{1: "webstorm", 2: "idea", 3: "goland", 4: "pycharm", 5: "phpstorm", 6: "clion", 7: "rider", 8: "rustrover", 9: "datagrip", 10: "rubymine"}
+	idFilesNames := [4]string{"bl", "crl", "PermanentDeviceId", "PermanentUserId"}
 
 	fmt.Println(
 		"=======================================\n" +
-			"\tСброс JetBrains IDEA v0.1\n" +
+			"\tСброс JetBrains IDEA v0.2\n" +
 			"=======================================\n",
 	)
 
 	// Сортируем ключи, потому что, иногда, они идут не по порядку
-	keys := make([]string, 0, len(names))
+	keys := make([]int, 0, len(names))
 	for k := range names {
 		keys = append(keys, k)
 	}
-	sort.Strings(keys)
+	sort.Ints(keys)
 
 	// Выводим информацию по ключам в консоль
 	printString := "Выбери приложения, которые ты хочешь сбросить:\n"
 	for _, k := range keys {
-		printString += "\t[" + k + "] " + names[k] + "\n"
+		value := strconv.Itoa(k)
+		printString += "\t[" + value + "] " + names[k] + "\n"
 	}
 	printString += "\n!!! ВАЖНО !!!\nВводи номера через запятую, например: \"1,2,3\"\n"
 
@@ -105,8 +108,13 @@ func main() {
 
 	// Проходимся циклом по веденным индексам
 	for _, element := range splitValues {
-		valName, _ := names[element]
-		valKey, ok := keyNames[element]
+		i, err := strconv.Atoi(element)
+
+		if err != nil {
+			continue
+		}
+		valName, _ := names[i]
+		valKey, ok := keyNames[i]
 
 		// Если такой индекс существует, то действуем
 		if ok {
@@ -127,6 +135,16 @@ func main() {
 			fmt.Println("[K] Ключ " + valName + " - удален!")
 		} else {
 			fmt.Println("[K] Значение: \"", element, "\" - не найдено!")
+		}
+	}
+
+	// Удаляем файлы с ID
+	for _, element := range idFilesNames {
+		err := os.Remove(path + "\\JetBrains\\" + element)
+		if err != nil {
+			fmt.Println("[I] Файл ID - " + element + " - не найден! ")
+		} else {
+			fmt.Println("[I] Файл ID - " + element + " - удален! ")
 		}
 	}
 
